@@ -5,10 +5,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './entities/user.entity';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt'
+import { JwtService } from '@nestjs/jwt'; // importe JWT
+import { access } from 'fs';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel:Model<UserDocument>){}
+  constructor(@InjectModel(User.name) private userModel:Model<UserDocument>, private jwtSvc: JwtService ){}
+
   async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const hashsedPassword = await bcrypt.hash(createUserDto.password,10);
@@ -36,11 +39,15 @@ export class UsersService {
       if(!isMatch) throw new HttpException('Please check your credentials', HttpStatus.UNAUTHORIZED)
       
       if(user && isMatch){
+        const payload = {sub: user._id, email: user.email, name: user.name}
         const {email, name} = user;
-        return {email, name};
+        return {
+          // Creando el access token
+          access_token: await this.jwtSvc.signAsync(payload) // Generar token
+                    
+        };
         
       } 
-
       } catch(error){
       throw new HttpException('Please check your credentials', HttpStatus.UNAUTHORIZED)
       
