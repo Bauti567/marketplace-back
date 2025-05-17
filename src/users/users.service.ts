@@ -19,36 +19,36 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<any> {
-  try {
-    const existingUser = await this.userModel.findOne({
-      email: createUserDto.email,
-    });
-    if (existingUser) {
-      throw new HttpException('User already exists', HttpStatus.CONFLICT);
+    try {
+      const existingUser = await this.userModel.findOne({
+        email: createUserDto.email,
+      });
+      if (existingUser) {
+        throw new HttpException('User already exists', HttpStatus.CONFLICT);
+      }
+
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      const newUser = new this.userModel({
+        ...createUserDto,
+        password: hashedPassword,
+      });
+
+      const user = await newUser.save();
+      const tokens = await this.generateTokens(user);
+
+      const { password, ...userWithoutPassword } = user.toObject();
+
+      return {
+        user: userWithoutPassword,
+        ...tokens,
+      };
+    } catch (error) {
+      throw new HttpException(
+        'Check login credentials',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
-
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    const newUser = new this.userModel({
-      ...createUserDto,
-      password: hashedPassword,
-    });
-
-    const user = await newUser.save();
-    const tokens = await this.generateTokens(user);
-
-    const { password, ...userWithoutPassword } = user.toObject();
-
-    return {
-      user: userWithoutPassword,
-      ...tokens,
-    };
-  } catch (error) {
-    throw new HttpException(
-      'Check login credentials',
-      HttpStatus.UNAUTHORIZED,
-    );
   }
-}
 
   async userExists(email: string): Promise<boolean> {
     const user = await this.userModel.findOne({ email });
@@ -67,18 +67,9 @@ export class UsersService {
         );
 
       if (user && isMatch) {
-        const payload = { sub: user._id, email: user.email, name: user.name };
-        const { email, name } = user;
+        const tokens = await this.generateTokens(user);
         return {
-          // Creando el access token
-          access_token: await this.jwtSvc.signAsync(payload, {
-            secret: 'jwt_secret',
-            expiresIn: '1d',
-          }), // Generar token
-          refresh_token: await this.jwtSvc.signAsync(payload, {
-            secret: 'jwt_secret_refresh',
-            expiresIn: '7d',
-          }),
+          ...tokens,
           message: 'Login succesfuly',
         };
       }
@@ -110,7 +101,13 @@ export class UsersService {
   }
 
   private async generateTokens(user): Promise<Tokens> {
-    const jwtPayload = { sub: user._id, email: user.email, name: user.name };
+    const jwtPayload = {
+      sub: user._id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    };
+
     const [accessToken, refresh_token] = await Promise.all([
       this.jwtSvc.signAsync(jwtPayload, {
         secret: 'jwt_secret',
