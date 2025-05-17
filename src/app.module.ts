@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
-import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
-
+import { ProductsModule } from './product-module/product.module';
+import { AuthModule } from './auth-module/auth.module.module';
 
 @Module({
-  imports: [UsersModule,MongooseModule.forRoot('mongodb+srv://jbautistapulido:nSf698KVJfWvF92B@cluster0.tuza9.mongodb.net/Inlaze?retryWrites=true&w=majority&appName=Cluster0')],
+  imports: [UsersModule,MongooseModule.forRoot('mongodb+srv://JuanBautista:dd5kHSJmMSuAWokT@atlascluster.lazttss.mongodb.net/marketplace?retryWrites=true&w=majority&appName=AtlasCluster'), AuthModule, ProductsModule],
   controllers: [AppController],
   providers: [AppService],
 })

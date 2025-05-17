@@ -1,18 +1,18 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator";
+import { IsEmail, IsString, MinLength, IsIn } from 'class-validator';
 
 export class CreateUserDto {
-    @IsString()
-    readonly name: string;
+  @IsString()
+  name: string;
 
-    @IsEmail()
-    @IsNotEmpty()
-    readonly email: string
+  @IsEmail()
+  email: string;
 
-    @MinLength(6)
-    @IsNotEmpty()
-    readonly password: string;
+  @MinLength(6)
+  password: string;
 
-    @IsString()
-    readonly phone: string
+  @IsString()
+  phone?: string;
 
+  @IsIn(['seller', 'buyer', 'admin'])
+  role: string; 
 }
