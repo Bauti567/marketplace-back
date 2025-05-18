@@ -8,7 +8,7 @@ export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
   sku: string;
-
+  
   @IsNumber()
   @Min(1)
   quantity: number;

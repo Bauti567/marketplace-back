@@ -43,9 +43,10 @@ export class UsersService {
         ...tokens,
       };
     } catch (error) {
+      console.error('Error al registrar usuario:', error);
       throw new HttpException(
-        'Check login credentials',
-        HttpStatus.UNAUTHORIZED,
+        error.message || 'Error al registrar',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }

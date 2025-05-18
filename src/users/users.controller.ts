@@ -13,6 +13,7 @@ import { Request } from 'express';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
+import { LoginUserDto } from './dto/login-user.dto';
 
 
 @Controller('users')
@@ -25,8 +26,8 @@ export class UsersController {
   }
 
   @Post('login')
-  login(@Body() createUserDto: CreateUserDto) {
-    const { email, password } = createUserDto;
+  login(@Body() loginUserDto: LoginUserDto) {
+    const { email, password } = loginUserDto;
     return this.usersService.loginUser(email, password);
   }
 
